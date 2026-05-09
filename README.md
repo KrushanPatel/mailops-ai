@@ -232,3 +232,71 @@ Build the operating system for email powered by autonomous AI agents.
 # License
 
 MIT License
+
+# Development Progress
+
+## Phase 1 — Infrastructure Core ✅
+
+### Completed
+
+- [x] Monorepo architecture
+- [x] FastAPI backend setup
+- [x] Environment configuration
+- [x] Docker infrastructure
+- [x] PostgreSQL integration
+- [x] Redis integration
+- [x] SQLAlchemy ORM setup
+- [x] Alembic migrations
+- [x] Initial database schemas
+- [x] Health check APIs
+
+---
+
+## Phase 2 — Email Platform Core 🚧
+
+### In Progress
+
+- [ ] Gmail OAuth integration
+- [ ] Gmail API integration
+- [ ] Email sync engine
+- [ ] Thread ingestion pipeline
+- [ ] Incremental sync architecture
+- [ ] Background workers
+
+---
+
+## Phase 3 — AI Intelligence Layer ⏳
+
+### Planned
+
+- [ ] Email summarization
+- [ ] Semantic search
+- [ ] Priority scoring
+- [ ] Action detection
+- [ ] Embedding pipeline
+
+---
+
+## Phase 4 — Agent Runtime ⏳
+
+### Planned
+
+- [ ] Tool calling
+- [ ] Workflow engine
+- [ ] Memory system
+- [ ] Autonomous inbox actions
+- [ ] Human approval layer
+
+---
+
+## Phase 5 — Production Platform ⏳
+
+### Planned
+
+- [ ] Multi-tenant architecture
+- [ ] Observability
+- [ ] Monitoring
+- [ ] CI/CD pipelines
+- [ ] Kubernetes deployment
+- [ ] Enterprise security
+

@@ -2,11 +2,14 @@ from fastapi import FastAPI
 from sqlalchemy import text
 
 from apps.api.core.database import engine
+from apps.api.routes.gmail import router as gmail_router
 
 app = FastAPI(
     title="MailOps AI",
     version="0.1.0"
 )
+
+app.include_router(gmail_router)
 
 
 @app.get("/")
