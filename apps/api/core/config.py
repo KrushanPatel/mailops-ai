@@ -2,11 +2,10 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    APP_NAME: str = "MailOps AI"
 
-    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/mailops"
-
-    REDIS_URL: str = "redis://localhost:6379"
+    DATABASE_URL: str
+    REDIS_URL: str
+    OPENAI_API_KEY: str
 
     class Config:
         env_file = ".env"

@@ -1,17 +1,25 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime
-from sqlalchemy.sql import func
+from sqlalchemy import Column
+from sqlalchemy import ForeignKey
+from sqlalchemy import Integer
+from sqlalchemy import Text
+
+from pgvector.sqlalchemy import Vector
 
 from apps.api.core.database import Base
 
 
 class Message(Base):
+
     __tablename__ = "messages"
 
     id = Column(Integer, primary_key=True, index=True)
 
-    thread_id = Column(Integer, ForeignKey("threads.id"))
+    thread_id = Column(
+        Integer,
+        ForeignKey("threads.id")
+    )
 
-    sender = Column(String)
+    sender = Column(Text)
 
     recipients = Column(Text)
 
@@ -19,4 +27,4 @@ class Message(Base):
 
     clean_body = Column(Text)
 
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    embedding = Column(Vector(1536))
