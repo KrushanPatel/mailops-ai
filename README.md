@@ -256,8 +256,8 @@ MIT License
 
 ### In Progress
 
-- [ ] Gmail OAuth integration
-- [ ] Gmail API integration
+- [x] Gmail OAuth integration
+- [x] Gmail API integration
 - [ ] Email sync engine
 - [ ] Thread ingestion pipeline
 - [ ] Incremental sync architecture
