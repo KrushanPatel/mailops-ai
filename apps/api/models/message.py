@@ -27,4 +27,4 @@ class Message(Base):
 
     clean_body = Column(Text)
 
-    embedding = Column(Vector(1536))
+    embedding = Column(Vector(3072))

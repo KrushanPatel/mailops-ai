@@ -3,7 +3,11 @@ from sqlalchemy.orm import Session
 
 from apps.api.models.message import Message
 
-from packages.llm_router.openai_embeddings import generate_embedding
+from packages.llm_router.factory import (
+    get_embedding_provider
+)
+
+embedding_provider = get_embedding_provider()
 
 
 def index_message_embeddings(db: Session):
@@ -19,7 +23,7 @@ def index_message_embeddings(db: Session):
         if not message.clean_body:
             continue
 
-        embedding = generate_embedding(
+        embedding = embedding_provider.generate_embedding(
             message.clean_body[:4000]
         )
 
@@ -42,13 +46,13 @@ def semantic_search(
     query: str
 ):
 
-    query_embedding = generate_embedding(query)
+    query_embedding = embedding_provider.generate_embedding(query)
 
     sql = text("""
         SELECT
             id,
             clean_body,
-            embedding <=> :embedding AS distance
+            embedding <=> CAST(:embedding AS vector) AS distance
         FROM messages
         WHERE embedding IS NOT NULL
         ORDER BY distance
