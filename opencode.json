@@ -1,0 +1,42 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md", "CLAUDE.md"],
+  "permission": {
+    "edit": "allow",
+    "bash": {
+      "rm -rf *": "deny",
+      "rm -rf .*": "deny",
+      "git push --force": "deny",
+      "git push --force-with-lease": "ask",
+      "git reset --hard": "ask",
+      "git commit --amend": "ask",
+      "dropdb *": "deny",
+      "*": "allow"
+    },
+    "external_directory": {
+      "~/.ssh/**": "deny",
+      "~/.config/opencode/**": "ask",
+      "*": "allow"
+    },
+    "webfetch": "allow",
+    "websearch": "allow"
+  },
+  "command": {
+    "dev": {
+      "description": "Start the API dev server",
+      "prompt": "Run uvicorn apps.api.main:app --reload --host 0.0.0.0 --port 8000 from repo root"
+    },
+    "migrate": {
+      "description": "Apply database migrations",
+      "prompt": "Run alembic upgrade head"
+    },
+    "lint": {
+      "description": "Run all linters",
+      "prompt": "Run black --check . && isort --check-only --diff . && pylint apps/ packages/"
+    },
+    "test": {
+      "description": "Run test suite",
+      "prompt": "Run pytest -v --tb=short"
+    }
+  }
+}
