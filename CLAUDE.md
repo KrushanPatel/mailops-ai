@@ -63,3 +63,19 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+---
+
+## Project: MailOps AI
+
+See [AGENTS.md](./AGENTS.md) for full repo reference. Key facts:
+
+- **Monorepo**: `apps/` (api, agent, worker, web) + `packages/` (email_core, llm_router, memory, prompts, shared, workflows)
+- **API server**: `uvicorn apps.api.main:app --reload` — must run from repo root (all imports are absolute)
+- **Migrations**: `alembic upgrade head`
+- **Infra**: `docker compose up` starts PostgreSQL 16 (pgvector) + Redis 7
+- **Only Gemini wired** — `EMBEDDING_PROVIDER=gemini`. OpenAI/Anthropic are empty stubs
+- **Factory quirk**: `get_chat_provider()` reads `settings.EMBEDDING_PROVIDER` (not a separate chat setting)
+- **Embedding dimension**: 3072 (`Vector(3072)` in Message model)
+- **Many stubs**: agent runtime, worker, vector store, workflow engine, security — all empty
+- **No tests exist** — GitHub CI workflow runs `pytest -v` (non-blocking)
