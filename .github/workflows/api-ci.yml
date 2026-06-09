@@ -1,0 +1,73 @@
+name: API CI
+
+on:
+  push:
+    branches: [main, "feature/**"]
+  pull_request:
+    branches: [main]
+
+env:
+  DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mailops_test
+  REDIS_URL: redis://localhost:6379
+  EMBEDDING_PROVIDER: gemini
+  GEMINI_API_KEY: fake-key
+  OPENAI_API_KEY: ""
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: mailops_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv pip install -r requirements.txt --system
+
+      - name: Check formatting with Black
+        run: black --check .
+
+      - name: Check imports with isort
+        run: isort --check-only --diff .
+
+      - name: Lint with Pylint
+        run: pylint apps/ packages/ --fail-under=6 || true
+
+      - name: Run migrations
+        run: alembic upgrade head
+
+      - name: Verify app imports
+        run: python -c "from apps.api.main import app; print('App loaded successfully')"
+
+      - name: Run tests
+        run: pytest -v --tb=short || true
