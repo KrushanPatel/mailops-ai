@@ -198,28 +198,103 @@ MailOps AI is designed with strict safety controls.
 
 ---
 
-# Local Development
+# Quick Start
 
-## Clone Repository
+## Prerequisites
+
+- Python 3.14+
+- [uv](https://docs.astral.sh/uv/) (`curl -LsSf https://astral.sh/uv/install.sh | sh`)
+- Docker Desktop
+- A Gemini API key ([get one free](https://ai.google.dev/gemini-api/docs/api-key))
+
+## Setup
 
 ```bash
+# 1. Clone and enter the repo
 git clone https://github.com/your-org/mailops-ai.git
 cd mailops-ai
+
+# 2. Install dependencies with uv
+uv venv
+source venv/bin/activate
+uv pip install -r requirements.txt
+
+# 3. Configure environment
+cp .env.example .env
 ```
 
-## Start Services
+Edit `.env` with your keys:
+
+```env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/mailops
+REDIS_URL=redis://localhost:6379
+EMBEDDING_PROVIDER=gemini
+GEMINI_API_KEY=your_gemini_api_key_here
+OPENAI_API_KEY=
+```
+
+> Note: `.env` is gitignored — your secrets stay local.
+
+## Run
 
 ```bash
-docker-compose up
+# 1. Start PostgreSQL and Redis
+docker compose up -d
+
+# 2. Run database migrations
+source venv/bin/activate && alembic upgrade head
+
+# 3. Start the API server
+source venv/bin/activate && uvicorn apps.api.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-## Backend
+The API is now live at **http://localhost:8000**. Open **http://localhost:8000/docs** for the interactive Swagger UI.
+
+## Test the APIs
+
+### 1. Health check
 
 ```bash
-cd apps/api
-pip install -r requirements.txt
-uvicorn main:app --reload
+curl http://localhost:8000/health
+# {"status":"healthy"}
 ```
+
+### 2. Gmail profile (requires OAuth)
+
+```bash
+curl http://localhost:8000/gmail/profile
+```
+
+On first run, a browser window opens for Gmail OAuth consent. After authorizing, a `token.json` file is created for subsequent requests.
+
+### 3. Sync Gmail threads
+
+```bash
+curl -X POST http://localhost:8000/sync/gmail
+# {"synced_threads": 5, "synced_messages": 12}
+```
+
+### 4. Index embeddings (after sync)
+
+```bash
+curl -X POST http://localhost:8000/embeddings/index
+# {"indexed_messages": 12}
+```
+
+### 5. Semantic search
+
+```bash
+curl "http://localhost:8000/search?query=meeting+schedule"
+```
+
+### 6. Summarize threads
+
+```bash
+curl -X POST http://localhost:8000/summary/threads
+# {"summarized_threads": 3}
+```
+
+> **Quota note**: The free Gemini tier is limited (~60 requests/day). If you get a 429 error, wait for the daily reset or enable billing on your Google Cloud project.
 
 ---
 
