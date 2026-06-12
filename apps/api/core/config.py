@@ -9,9 +9,13 @@ class Settings(BaseSettings):
 
     EMBEDDING_PROVIDER: str
 
+    CHAT_PROVIDER: str = ""
+
     GEMINI_API_KEY: str
 
     OPENAI_API_KEY: str = ""
+
+    DEEPSEEK_API_KEY: str = ""
 
     class Config:
         env_file = ".env"
