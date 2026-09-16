@@ -9,9 +9,12 @@ on:
 env:
   DATABASE_URL: postgresql://postgres:postgres@localhost:5432/mailops_test
   REDIS_URL: redis://localhost:6379
-  EMBEDDING_PROVIDER: gemini
-  GEMINI_API_KEY: fake-key
-  OPENAI_API_KEY: ""
+  CHAT_PROVIDER: google_genai
+  CHAT_MODEL: gemini-2.0-flash
+  CHAT_API_KEY: fake-key
+  EMBEDDING_PROVIDER: google_genai
+  EMBEDDING_MODEL: gemini-embedding-001
+  EMBEDDING_API_KEY: fake-key
 
 jobs:
   ci:

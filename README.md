@@ -228,9 +228,12 @@ Edit `.env` with your keys:
 ```env
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/mailops
 REDIS_URL=redis://localhost:6379
-EMBEDDING_PROVIDER=gemini
-GEMINI_API_KEY=your_gemini_api_key_here
-OPENAI_API_KEY=
+CHAT_PROVIDER=google_genai
+CHAT_MODEL=gemini-2.0-flash
+CHAT_API_KEY=your_gemini_api_key_here
+EMBEDDING_PROVIDER=google_genai
+EMBEDDING_MODEL=gemini-embedding-001
+EMBEDDING_API_KEY=your_gemini_api_key_here
 ```
 
 > Note: `.env` is gitignored — your secrets stay local.
