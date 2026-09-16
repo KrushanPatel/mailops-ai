@@ -78,11 +78,12 @@ See [AGENTS.md](./AGENTS.md) for full repo reference. Key facts:
 - **Tests**: `pytest -v --tb=short` — no tests exist yet; CI runs this and pylint non-blocking (`|| true`)
 
 ### LLM providers (`packages/llm_router/`)
-- `factory.py`: `get_embedding_provider()` reads `EMBEDDING_PROVIDER`; `get_chat_provider()` reads `CHAT_PROVIDER`, falling back to `EMBEDDING_PROVIDER` when unset
-- Wired: `gemini` (`gemini_chat.py` / `gemini_embeddings.py`) and `deepseek` (`deepseek_chat.py` / `deepseek_embeddings.py`)
-- Stubs (empty files): `openai_provider.py`, `anthropic_provider.py`
-- Providers extend `BaseChatProvider.generate()` / `BaseEmbeddingProvider.generate_embedding()` (`base_chat.py`, `base_embeddings.py`)
-- Embedding dimension is fixed at 3072 (`Vector(3072)` in `apps/api/models/message.py`, sized for Gemini's `gemini-embedding-001`) — swapping embedding providers requires a matching column-size migration
+- Built on LangChain's `init_chat_model()` / `init_embeddings()` — provider-agnostic by construction, no per-provider Python files
+- `settings.py`: `LLMSettings(BaseSettings)` holds `CHAT_PROVIDER`/`CHAT_MODEL`/`CHAT_API_KEY`/`CHAT_BASE_URL` and the `EMBEDDING_*` equivalents, loaded from `.env`
+- `factory.py`: `get_chat_provider()` returns a LangChain `BaseChatModel` (call `.invoke(prompt).content`); `get_embedding_provider()` returns a LangChain `Embeddings` (call `.embed_query(text)`)
+- Switching or adding a provider is an env var change, not a code change — any `model_provider` LangChain's `init_chat_model`/`init_embeddings` supports works (`openai`, `anthropic`, `google_genai`, `deepseek`, `ollama`, ...), as long as its `langchain-<provider>` package is installed. Currently installed: `langchain-openai`, `langchain-anthropic`, `langchain-google-genai`, `langchain-deepseek`, `langchain-ollama`
+- `init_embeddings()` supports fewer providers than `init_chat_model()` (notably no `anthropic`, no `deepseek` as of langchain 1.4) — check LangChain's docs before picking an `EMBEDDING_PROVIDER`
+- Embedding dimension is fixed at 3072 (`Vector(3072)` in `apps/api/models/message.py`, sized for Gemini's `gemini-embedding-001`) — swapping embedding providers/models requires a matching column-size migration
 
 ### API layer
 - One router per feature in `apps/api/routes/`, included in `apps/api/main.py`:

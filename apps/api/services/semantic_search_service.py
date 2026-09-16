@@ -23,7 +23,7 @@ def index_message_embeddings(db: Session):
         if not message.clean_body:
             continue
 
-        embedding = embedding_provider.generate_embedding(
+        embedding = embedding_provider.embed_query(
             message.clean_body[:4000]
         )
 
@@ -46,7 +46,7 @@ def semantic_search(
     query: str
 ):
 
-    query_embedding = embedding_provider.generate_embedding(query)
+    query_embedding = embedding_provider.embed_query(query)
 
     sql = text("""
         SELECT

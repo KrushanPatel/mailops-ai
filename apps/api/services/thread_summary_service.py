@@ -39,7 +39,7 @@ def summarize_threads(db: Session):
         {combined_text[:12000]}
         """
 
-        summary = chat_provider.generate(prompt)
+        summary = chat_provider.invoke(prompt).content
 
         thread.summary = summary
 
