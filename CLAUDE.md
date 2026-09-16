@@ -71,11 +71,29 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 See [AGENTS.md](./AGENTS.md) for full repo reference. Key facts:
 
 - **Monorepo**: `apps/` (api, agent, worker, web) + `packages/` (email_core, llm_router, memory, prompts, shared, workflows)
-- **API server**: `uvicorn apps.api.main:app --reload` — must run from repo root (all imports are absolute)
-- **Migrations**: `alembic upgrade head`
-- **Infra**: `docker compose up` starts PostgreSQL 16 (pgvector) + Redis 7
-- **Only Gemini wired** — `EMBEDDING_PROVIDER=gemini`. OpenAI/Anthropic are empty stubs
-- **Factory quirk**: `get_chat_provider()` reads `settings.EMBEDDING_PROVIDER` (not a separate chat setting)
-- **Embedding dimension**: 3072 (`Vector(3072)` in Message model)
-- **Many stubs**: agent runtime, worker, vector store, workflow engine, security — all empty
-- **No tests exist** — GitHub CI workflow runs `pytest -v` (non-blocking)
+- **API server**: `uvicorn apps.api.main:app --reload` — must run from repo root (all imports are absolute, e.g. `from apps.api.core.database import Base`)
+- **Migrations**: `alembic upgrade head` (new revision: `alembic revision -m "..."`)
+- **Infra**: `docker compose up -d` starts PostgreSQL 16 (pgvector) + Redis 7 only — no API/worker service defined in compose
+- **Lint**: `black --check . && isort --check-only --diff . && pylint apps/ packages/ --fail-under=6`
+- **Tests**: `pytest -v --tb=short` — no tests exist yet; CI runs this and pylint non-blocking (`|| true`)
+
+### LLM providers (`packages/llm_router/`)
+- `factory.py`: `get_embedding_provider()` reads `EMBEDDING_PROVIDER`; `get_chat_provider()` reads `CHAT_PROVIDER`, falling back to `EMBEDDING_PROVIDER` when unset
+- Wired: `gemini` (`gemini_chat.py` / `gemini_embeddings.py`) and `deepseek` (`deepseek_chat.py` / `deepseek_embeddings.py`)
+- Stubs (empty files): `openai_provider.py`, `anthropic_provider.py`
+- Providers extend `BaseChatProvider.generate()` / `BaseEmbeddingProvider.generate_embedding()` (`base_chat.py`, `base_embeddings.py`)
+- Embedding dimension is fixed at 3072 (`Vector(3072)` in `apps/api/models/message.py`, sized for Gemini's `gemini-embedding-001`) — swapping embedding providers requires a matching column-size migration
+
+### API layer
+- One router per feature in `apps/api/routes/`, included in `apps/api/main.py`:
+  - `gmail.py` → `GET /gmail/profile`
+  - `sync.py` → `POST /sync/gmail`
+  - `search.py` → `POST /embeddings/index`, `GET /search`
+  - `summary.py` → `POST /summary/threads`
+- Routes call `apps/api/services/*` (`gmail_sync_service.py`, `semantic_search_service.py`, `thread_summary_service.py`), which use the SQLAlchemy models directly — no repository/DAO layer
+- DB sessions: both `Depends(get_db)` and manual `SessionLocal()` are used interchangeably across routes — match whichever the file you're editing already uses
+- Gmail access goes through `packages/email_core/` (`gmail_auth.py`, `gmail_provider.py`, `parser.py`, `sync_engine.py`); OAuth relies on local `credentials.json`/`token.json`, not the DB
+
+### Known drift / stubs
+- Migration `5e2c7f30aa75` created `threads.summary` as `String` and added `priority_score`/`created_at` columns; `apps/api/models/thread.py` has `summary` as `Text` and lacks those two columns — model and applied schema are out of sync
+- Empty stub files: `apps/agent/runtime.py`, `apps/worker/worker.py`, `packages/memory/vector_store.py`, `packages/workflows/engine.py`, `packages/shared/utils.py`, `packages/shared/constants.py`, `apps/api/core/security.py`, `apps/api/schemas/__init__.py`
