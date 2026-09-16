@@ -48,6 +48,8 @@ def semantic_search(
 
     query_embedding = embedding_provider.embed_query(query)
 
+    embedding_literal = "[" + ",".join(str(x) for x in query_embedding) + "]"
+
     sql = text("""
         SELECT
             id,
@@ -62,7 +64,7 @@ def semantic_search(
     results = db.execute(
         sql,
         {
-            "embedding": query_embedding
+            "embedding": embedding_literal
         }
     )
 

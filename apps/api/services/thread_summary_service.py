@@ -45,7 +45,7 @@ def summarize_threads(db: Session):
 
         summarized_count += 1
 
-    db.commit()
+        db.commit()
 
     return {
         "summarized_threads": summarized_count

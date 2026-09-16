@@ -14,7 +14,7 @@ router = APIRouter(
 
 
 @router.post("/threads")
-async def summarize_email_threads():
+def summarize_email_threads():
 
     db: Session = SessionLocal()
 

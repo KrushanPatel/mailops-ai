@@ -5,9 +5,22 @@ def fetch_threads(max_results: int = 10):
 
     service = build_gmail_service()
 
-    response = service.users().threads().list(
-        userId="me",
-        maxResults=max_results
-    ).execute()
+    threads = []
+    page_token = None
 
-    return response.get("threads", [])
+    while True:
+
+        response = service.users().threads().list(
+            userId="me",
+            maxResults=max_results,
+            pageToken=page_token
+        ).execute()
+
+        threads.extend(response.get("threads", []))
+
+        page_token = response.get("nextPageToken")
+
+        if not page_token:
+            break
+
+    return threads

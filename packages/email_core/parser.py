@@ -5,32 +5,9 @@ from bs4 import BeautifulSoup
 
 def extract_email_body(payload):
 
-    body_data = ""
-
-    if "parts" in payload:
-
-        for part in payload["parts"]:
-
-            mime_type = part.get("mimeType")
-
-            if mime_type == "text/plain":
-
-                data = part["body"].get("data")
-
-                if data:
-                    body_data = data
-                    break
-
-            elif mime_type == "text/html":
-
-                data = part["body"].get("data")
-
-                if data:
-                    body_data = data
-
-    else:
-
-        body_data = payload["body"].get("data", "")
+    body_data = _find_part_data(payload, "text/plain") or _find_part_data(
+        payload, "text/html"
+    )
 
     if not body_data:
         return ""
@@ -47,6 +24,21 @@ def extract_email_body(payload):
     clean_body = clean_html(decoded_body)
 
     return clean_body
+
+
+def _find_part_data(payload, mime_type):
+
+    if payload.get("mimeType") == mime_type:
+        return payload.get("body", {}).get("data")
+
+    for part in payload.get("parts", []):
+
+        data = _find_part_data(part, mime_type)
+
+        if data:
+            return data
+
+    return None
 
 
 def clean_html(html_content):

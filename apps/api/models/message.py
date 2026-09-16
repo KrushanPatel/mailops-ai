@@ -19,6 +19,8 @@ class Message(Base):
         ForeignKey("threads.id")
     )
 
+    gmail_message_id = Column(Text, unique=True)
+
     sender = Column(Text)
 
     recipients = Column(Text)

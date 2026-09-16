@@ -9,7 +9,7 @@ router = APIRouter()
 
 
 @router.post("/sync/gmail")
-async def gmail_sync(
+def gmail_sync(
     db: Session = Depends(get_db)
 ):
 

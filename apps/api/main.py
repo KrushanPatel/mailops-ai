@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from sqlalchemy import text
 
 from apps.api.core.database import engine
@@ -35,7 +35,7 @@ async def health():
 
 
 @app.get("/db-health")
-async def db_health():
+async def db_health(response: Response):
 
     try:
 
@@ -46,9 +46,10 @@ async def db_health():
             "database": "connected"
         }
 
-    except Exception as e:
+    except Exception:
+
+        response.status_code = 503
 
         return {
-            "database": "failed",
-            "error": str(e)
+            "database": "failed"
         }

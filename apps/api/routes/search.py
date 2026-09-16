@@ -14,7 +14,7 @@ router = APIRouter()
 
 
 @router.post("/embeddings/index")
-async def index_embeddings(
+def index_embeddings(
     db: Session = Depends(get_db)
 ):
 
@@ -22,7 +22,7 @@ async def index_embeddings(
 
 
 @router.get("/search")
-async def search_emails(
+def search_emails(
     query: str,
     db: Session = Depends(get_db)
 ):

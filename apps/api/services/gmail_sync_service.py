@@ -21,41 +21,54 @@ def sync_gmail_threads(db: Session):
 
         gmail_thread_id = thread["id"]
 
-        existing_thread = db.query(Thread).filter(
+        db_thread = db.query(Thread).filter(
             Thread.gmail_thread_id == gmail_thread_id
         ).first()
-
-        if existing_thread:
-            continue
 
         thread_data = service.users().threads().get(
             userId="me",
             id=gmail_thread_id
         ).execute()
 
-        subject = ""
-
         messages = thread_data.get("messages", [])
 
-        if messages:
+        if db_thread is None:
 
-            headers = messages[0]["payload"]["headers"]
+            subject = ""
 
-            for header in headers:
+            if messages:
 
-                if header["name"] == "Subject":
-                    subject = header["value"]
-                    break
+                headers = messages[0]["payload"]["headers"]
 
-        db_thread = Thread(
-            gmail_thread_id=gmail_thread_id,
-            subject=subject
-        )
+                for header in headers:
 
-        db.add(db_thread)
-        db.flush()
+                    if header["name"] == "Subject":
+                        subject = header["value"]
+                        break
+
+            db_thread = Thread(
+                gmail_thread_id=gmail_thread_id,
+                subject=subject
+            )
+
+            db.add(db_thread)
+            db.flush()
+
+        existing_message_ids = {
+            row[0]
+            for row in db.query(Message.gmail_message_id).filter(
+                Message.thread_id == db_thread.id
+            ).all()
+        }
+
+        new_messages = 0
 
         for gmail_message in messages:
+
+            gmail_message_id = gmail_message["id"]
+
+            if gmail_message_id in existing_message_ids:
+                continue
 
             payload = gmail_message.get("payload", {})
 
@@ -76,6 +89,7 @@ def sync_gmail_threads(db: Session):
 
             db_message = Message(
                 thread_id=db_thread.id,
+                gmail_message_id=gmail_message_id,
                 sender=sender,
                 recipients=recipients,
                 body=clean_body,
@@ -84,9 +98,11 @@ def sync_gmail_threads(db: Session):
 
             db.add(db_message)
 
+            new_messages += 1
             synced_messages += 1
 
-        synced_count += 1
+        if new_messages:
+            synced_count += 1
 
     db.commit()
 

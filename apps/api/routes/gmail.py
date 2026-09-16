@@ -6,7 +6,7 @@ router = APIRouter()
 
 
 @router.get("/gmail/profile")
-async def gmail_profile():
+def gmail_profile():
 
     service = build_gmail_service()
 
